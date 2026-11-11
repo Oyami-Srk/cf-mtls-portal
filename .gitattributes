@@ -1,2 +1,3 @@
 * text=auto eol=lf
-web/vendor/forge.min.js -text
+web/assets/vendor/forge.min.js -text
+web/assets/vendor/bulma.min.css -text

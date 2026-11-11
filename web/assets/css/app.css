@@ -1,0 +1,31 @@
+/* Bulma owns layout, forms, buttons, tables, spacing, and light/dark themes. */
+[hidden] {
+  display: none !important;
+}
+
+.notice {
+  border-inline-start: 2px solid currentColor;
+  padding-inline-start: 1rem;
+  overflow-wrap: anywhere;
+}
+
+.device-actions {
+  min-width: 5rem;
+}
+
+dialog {
+  margin: auto;
+  width: min(26rem, calc(100% - 2rem));
+  border: 1px solid var(--bulma-border);
+  border-radius: var(--bulma-radius);
+  background: var(--bulma-scheme-main);
+  color: var(--bulma-text);
+}
+
+dialog:not([open]) {
+  display: none;
+}
+
+dialog::backdrop {
+  background: rgb(0 0 0 / 35%);
+}

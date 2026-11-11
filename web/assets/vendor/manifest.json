@@ -1,0 +1,20 @@
+{
+  "bulma": {
+    "version": "1.0.4",
+    "file": "bulma.min.css",
+    "license": "LICENSE.bulma",
+    "source": "https://registry.npmjs.org/bulma/-/bulma-1.0.4.tgz",
+    "archiveIntegrity": "sha512-Ffb6YGXDiZYX3cqvSbHWqQ8+LkX6tVoTcZuVB3lm93sbAVXlO0D6QlOTMnV6g18gILpAXqkG2z9hf9z4hCjz2g==",
+    "sha256": "67fa26df1ca9e95d8f2adc7c04fa1b15fa3d24257470ebc10cc68b9aab914bee",
+    "sri": "sha384-DCY3M8xLkMu6c9IKcKbe+jHKMjelnwC0p+SBaxfHxoBYZWdJF2X400UdBCgATtAB"
+  },
+  "node-forge": {
+    "version": "1.4.3",
+    "file": "forge.min.js",
+    "license": "LICENSE.node-forge",
+    "source": "https://registry.npmjs.org/node-forge/-/node-forge-1.4.3.tgz",
+    "archiveIntegrity": "sha512-P6wzfh6t70avmV8FrVEAd/36sOPJQ+hkaJVX1Laap9J/77m7M0eyozDvc8SwnDf4P7MP94gwbAAo0rg3YVXT+g==",
+    "sha256": "a8b6d50267d709db0411a598efc4c57bffd6127f21410339f71c919e3bde725b",
+    "sri": "sha384-wGUu0HiDEHYlLgWmmzkisjpjCoctsJGabHWb3Uw6/mfaB4B1q7TO2FHzdadh7v/+"
+  }
+}

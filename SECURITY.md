@@ -22,9 +22,11 @@
 | 超时、崩溃及重复签发 | 签发 POST 禁止自动重试；先保存申请公钥哈希。规则写入前记录持久化意图；若仍观察到旧表达式，不能判定远端请求结束，因此保留阻断状态，不盲目重放。 |
 | 撤销竞态 | 先持久化 revocation_pending，使其他更新不再加入该证书；确认从规则排除后才标记 blocked，再撤销 Cloudflare 证书。网络失败和进程重启保留待处理状态。 |
 | XSS 与浏览器私钥 | 仅 textContent 构造用户内容，严格 CSP、无第三方 CDN、无 inline/eval、禁止 framing；密钥只在本页 RAM 中生成，不用 localStorage/IndexedDB/Service Worker；离页提示、可核对签发结果后重打包，避免重复提交覆盖未保存密钥。 |
-| Token 与日志 | Cloudflare 环境变量使用 secrecy::SecretString；无网页写 Token 接口、无密钥序列化；错误日志仅记录静态 code，不打印请求、OIDC Token、CSR 或远端响应；反代示例不记录 query。 |
+| Token 与日志 | Cloudflare 环境变量使用 secrecy::SecretString；无网页写 Token 接口、无密钥序列化；错误日志仅记录静态 code，不打印请求、OIDC Token、CSR 或远端响应；反代应避免记录 OIDC query。 |
 | 资源与文件 | 请求 16 KiB、URI 4 KiB、128 并发、IP/账号速率限制、登录/申请缓存上限、签发额度；SQLite 参数化、FULL 同步、单实例锁，Linux 数据目录 0700、文件 0600；独立非 root 容器、只读根目录、无 Docker socket。 |
 | 供应链 | Cargo.lock、固定 Rust 与基础镜像 digest、Actions commit SHA、浏览器 vendor 校验值；发布只从通过 CI 的 master 触发，不把真实凭据传给 PR 或镜像 build args。 |
+
+HTTP、OIDC、会话、受限出站请求与浏览器密钥代码分目录维护；阅读入口见 [docs/review.md](docs/review.md)。浏览器密码学模块不发网络请求，网络模块不接触私钥。第三方 CSS/JS 以固定发布物本地提供，校验清单和 HTML SRI 由 Node 内置测试核对；未引入 CDN、npm 安装步骤或前端打包工具。
 
 ## RustSec 公告的明确例外
 

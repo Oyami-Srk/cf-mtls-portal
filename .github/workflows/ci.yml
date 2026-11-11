@@ -32,7 +32,10 @@ jobs:
       - name: Build release
         run: cargo build --release --locked
       - name: Browser script syntax
-        run: node --check web/app.js
+        run: |
+          for file in web/assets/js/*.mjs; do node --check "$file"; done
+      - name: Browser module tests (Node built-ins only)
+        run: node --test web/tests/*.test.mjs
       - name: RustSec dependency review
         run: |
           cargo install cargo-audit --version 0.23.0 --locked

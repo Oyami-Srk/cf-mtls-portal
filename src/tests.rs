@@ -166,7 +166,7 @@ pub fn state(dir: &tempfile::TempDir) -> Arc<crate::state::State> {
 async fn anonymous_and_spoofed_requests_do_not_reach_issuance() {
     let dir = tempfile::tempdir().unwrap();
     let state = state(&dir);
-    let app = crate::router(state);
+    let app = crate::http::router(state);
     for (method, path, host, expected) in [
         (
             "GET",
@@ -200,7 +200,7 @@ async fn anonymous_and_spoofed_requests_do_not_reach_issuance() {
 #[tokio::test]
 async fn unauthenticated_page_has_no_secrets_or_application_branding() {
     let dir = tempfile::tempdir().unwrap();
-    let app = crate::router(state(&dir));
+    let app = crate::http::router(state(&dir));
     let req = Request::builder()
         .uri("/")
         .header("host", "certs.example.com")
@@ -219,4 +219,42 @@ async fn unauthenticated_page_has_no_secrets_or_application_branding() {
     assert!(body.contains("mTLS 证书"));
     assert!(!body.contains("Chat"));
     assert!(!body.contains("unit-test-not-a-real-oidc-secret"));
+}
+
+#[tokio::test]
+async fn browser_modules_are_served_only_from_the_asset_allowlist() {
+    let dir = tempfile::tempdir().unwrap();
+    let app = crate::http::router(state(&dir));
+    for (path, expected, content_type) in [
+        (
+            "/assets/js/app.mjs",
+            StatusCode::OK,
+            Some("text/javascript; charset=utf-8"),
+        ),
+        (
+            "/assets/js/certificates.mjs",
+            StatusCode::OK,
+            Some("text/javascript; charset=utf-8"),
+        ),
+        (
+            "/assets/vendor/bulma.min.css",
+            StatusCode::OK,
+            Some("text/css; charset=utf-8"),
+        ),
+        ("/assets/vendor/LICENSE.bulma", StatusCode::NOT_FOUND, None),
+        ("/assets/../config.toml", StatusCode::NOT_FOUND, None),
+    ] {
+        let request = Request::builder()
+            .uri(path)
+            .header("host", "certs.example.com")
+            .extension(ConnectInfo("127.0.0.1:1234".parse::<SocketAddr>().unwrap()))
+            .body(Body::empty())
+            .unwrap();
+        let response = app.clone().oneshot(request).await.unwrap();
+        assert_eq!(response.status(), expected);
+        if let Some(value) = content_type {
+            assert_eq!(response.headers()["content-type"], value);
+        }
+        assert!(response.headers().contains_key("content-security-policy"));
+    }
 }
