@@ -1,0 +1,24 @@
+name: cf-mtls-portal
+services:
+  app:
+    image: ${MTLS_IMAGE:-shiroko/cf-mtls-portal:latest}
+    restart: unless-stopped
+    user: "10001:10001"
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    ports: ["127.0.0.1:3095:8080"]
+    environment:
+      CLOUDFLARE_API_TOKEN: ${CLOUDFLARE_API_TOKEN:?Set CLOUDFLARE_API_TOKEN at deployment time}
+    volumes:
+      - ./config.toml:/config/config.toml:ro
+      - ./secrets/oidc-client-secret:/secrets/oidc-client-secret:ro
+      - ./var/data:/data
+    tmpfs: ["/tmp:rw,noexec,nosuid,size=8m"]
+    mem_limit: 192m
+    cpus: 0.5
+    pids_limit: 64
+    stop_grace_period: 65s
+    logging:
+      driver: json-file
+      options: {max-size: 10m, max-file: "3"}

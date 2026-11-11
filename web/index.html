@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>mTLS 证书</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/vendor/forge.min.js" integrity="sha384-wGUu0HiDEHYlLgWmmzkisjpjCoctsJGabHWb3Uw6/mfaB4B1q7TO2FHzdadh7v/+" defer></script>
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <header><a href="/" class="title">mTLS 证书</a><div class="account"><span id="user-name"></span><button id="logout" class="link" hidden>退出</button></div></header>
+  <main>
+    <p class="intro">签发、下载和管理客户端证书。</p>
+    <p id="notice" class="notice" role="status" aria-live="polite" hidden></p>
+    <section id="login-panel"><h1>登录</h1><p>使用身份中心账号和多因素认证登录。</p><a class="button" href="/auth/login">使用 SSO 登录</a></section>
+    <div id="workspace" hidden>
+      <section>
+        <div class="heading"><h1 id="enroll-title">签发证书</h1><span id="validity" class="muted"></span></div>
+        <form id="enroll-form">
+          <div class="fields">
+            <div><label for="device-name">设备名称</label><input id="device-name" name="device-name" maxlength="60" autocomplete="off" required></div>
+            <div><label for="device-type">设备类型</label><select id="device-type"><option value="android">Android</option><option value="ios">iPhone / iPad</option><option value="windows">Windows</option><option value="mac">macOS</option></select></div>
+            <div><label for="import-password">文件导入密码</label><input id="import-password" type="password" minlength="16" maxlength="128" autocomplete="new-password" required><div class="password-tools"><button id="generate-password" class="link" type="button">随机生成</button><button id="show-password" class="link" type="button">显示密码</button></div></div>
+            <div><label for="confirm-password">确认密码</label><input id="confirm-password" type="password" minlength="16" maxlength="128" autocomplete="new-password" required></div>
+          </div>
+          <p class="muted">密码至少 16 个字符，安装时需要输入。私钥与密码只在当前浏览器处理。</p>
+          <p id="renew-note" class="muted" hidden>新证书安装并验证后，请自行撤销旧证书。</p>
+          <div class="actions"><button id="issue-button" type="submit">签发证书</button><button id="clear-request" class="secondary" type="button" hidden>清除本次申请</button><span id="progress" role="status" hidden></span></div>
+        </form>
+        <div id="download-panel" hidden>
+          <p id="download-summary"></p>
+          <p class="muted">请保存 .p12 文件和导入密码。离开页面后，服务器无法重新提供私钥。</p>
+          <div class="actions"><button id="download-p12" type="button">下载 .p12</button><button id="retry-package" class="secondary" type="button" hidden>重新打包</button><button id="new-device" class="secondary" type="button">完成</button></div>
+        </div>
+        <details class="install"><summary>安装说明</summary><ol id="install-steps"></ol><p class="muted">验证时请使用经过 mTLS 入口的网络。内网直连可能不要求客户端证书。</p></details>
+      </section>
+      <section>
+        <div class="heading"><h2>证书列表</h2><button id="refresh-devices" class="link" type="button">刷新</button></div>
+        <div class="table-wrap"><table><thead><tr><th>设备</th><th>状态</th><th>到期日期</th><th><span class="sr-only">操作</span></th></tr></thead><tbody id="device-list"></tbody></table></div>
+        <p id="empty-list" class="muted" hidden>暂无证书。</p>
+        <details class="connection"><summary>服务状态</summary><p id="connection-status" class="muted"></p><button id="check-connection" class="secondary" type="button">检查连接</button></details>
+      </section>
+    </div>
+  </main>
+  <footer>私钥不上传服务器。每台设备使用独立证书。</footer>
+  <dialog id="confirm-dialog"><h2>撤销证书</h2><p id="confirm-message"></p><p>该证书将不能再通过受保护的 mTLS 入口。此操作不影响其他证书。</p><div class="actions"><button id="cancel-revoke" class="secondary" type="button">取消</button><button id="confirm-revoke" class="danger" type="button">确认撤销</button></div></dialog>
+</body>
+</html>

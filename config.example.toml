@@ -1,0 +1,30 @@
+origin = "https://certs.example.com"
+listen = "127.0.0.1:8090"
+data_dir = "var/data"
+oidc_secret_file = "secrets/oidc-client-secret"
+trusted_proxies = ["127.0.0.1", "::1"]
+
+[oidc]
+issuer = "https://auth.example.com"
+client_id = "mtls-portal"
+required_group = "certificate-admins"
+allowed_users = ["admin"]
+# 可额外限制已确认的稳定 OIDC sub；空列表不增加 sub 限制。
+allowed_subjects = []
+required_amr = ["mfa"]
+
+[cloudflare]
+zone_id = "00000000000000000000000000000000"
+rule_id = "00000000000000000000000000000000"
+hostnames = ["service.example.com"]
+# 必须从当前规则复制完整表达式。首次写入前只允许匹配该表达式；
+# 后续使用数据库中已确认的表达式。发生外部修改时停止自动更新。
+initial_expression = '(http.host eq "service.example.com" and (not cf.tls_client_auth.cert_verified or cf.tls_client_auth.cert_revoked or not (cf.tls_client_auth.cert_fingerprint_sha256 in {"0000000000000000000000000000000000000000000000000000000000000000"})))'
+validity_days = 365
+max_devices = 12
+daily_limit = 5
+
+# 可选：既有证书。已撤销的保留证书不会重新激活。
+# [[pinned_certificates]]
+# name = "既有设备"
+# fingerprint = "64 位小写 SHA256 十六进制"

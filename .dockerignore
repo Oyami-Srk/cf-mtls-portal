@@ -1,0 +1,13 @@
+target
+.git
+.github
+var
+secrets
+config.toml
+.env
+.env.*
+*.p12
+*.pfx
+*.key
+*.sqlite3*
+*.log

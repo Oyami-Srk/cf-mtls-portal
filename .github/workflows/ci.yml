@@ -1,0 +1,85 @@
+name: CI
+on:
+  pull_request:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  rust:
+    name: Rust lint, tests and build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - name: Rust toolchain
+        run: rustup toolchain install 1.95.0 --profile minimal --component rustfmt,clippy
+      - name: Format
+        run: cargo fmt --all -- --check
+      - name: Lint
+        run: cargo clippy --locked --all-targets -- -D warnings
+      - name: Unit and HTTP boundary tests
+        run: cargo test --locked
+      - name: Build release
+        run: cargo build --release --locked
+      - name: Browser script syntax
+        run: node --check web/app.js
+      - name: RustSec dependency review
+        run: |
+          cargo install cargo-audit --version 0.23.0 --locked
+          # Reviewed public-key-verification-only exception; see SECURITY.md.
+          cargo audit --json > cargo-audit.json || true
+          cargo audit --ignore RUSTSEC-2023-0071
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        if: always()
+        with:
+          name: dependency-audit
+          path: cargo-audit.json
+          if-no-files-found: ignore
+          retention-days: 14
+
+  publish:
+    name: Publish Docker Hub image
+    needs: rust
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4
+      - uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
+        id: image
+        with:
+          context: .
+          platforms: linux/amd64
+          push: true
+          tags: |
+            shiroko/cf-mtls-portal:latest
+            shiroko/cf-mtls-portal:master
+            shiroko/cf-mtls-portal:sha-${{ github.sha }}
+          provenance: mode=max
+          sbom: true
+          labels: |
+            org.opencontainers.image.source=https://github.com/Oyami-Srk/cf-mtls-portal
+            org.opencontainers.image.revision=${{ github.sha }}
+      - name: Record digest
+        env:
+          IMAGE_DIGEST: ${{ steps.image.outputs.digest }}
+        run: printf '%s\n' "shiroko/cf-mtls-portal@$IMAGE_DIGEST" >> "$GITHUB_STEP_SUMMARY"
