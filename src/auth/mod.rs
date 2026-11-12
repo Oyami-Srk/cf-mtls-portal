@@ -65,7 +65,9 @@ struct Groups {
 }
 impl AdditionalClaims for Groups {}
 #[derive(Deserialize)]
-#[serde(deny_unknown_fields)]
+// RFC 6749 section 4.1.2 requires ignoring unrecognized authorization response
+// parameters (for example Authelia's scope). Only these fields affect login;
+// Serde still rejects duplicate recognized fields and finish validates them.
 pub struct Callback {
     pub code: Option<String>,
     pub state: Option<String>,

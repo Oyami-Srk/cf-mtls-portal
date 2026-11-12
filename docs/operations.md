@@ -8,6 +8,7 @@ OIDC 客户端要求：
 
 - 精确回调 `https://你的领证域名/auth/callback`。
 - scopes 为 `openid profile groups`，授权码模式、`client_secret_basic`、PKCE S256。
+- 回调按 RFC 6749 §4.1.2 忽略身份中心附加的响应参数（例如 Authelia 的 `scope`），不以这些参数授予权限；`code`、`state`、`error`、`iss` 仍按原流程处理，重复的已知字段会拒绝。
 - 身份中心对管理组要求 MFA；应用要求配置的 `amr` 声明（通常为 `mfa`），缺失时拒绝登录。
 - discovery、JWKS、授权、token、userinfo 必须与 issuer 同源。
 - 不要把身份中心和领证域名加入受本应用管理的 mTLS 规则，避免首次领证死锁。
