@@ -7,7 +7,7 @@ publish = false
 
 [dependencies]
 axum = { version = "0.8.9", default-features = false, features = ["http1", "json", "query", "tokio"] }
-base64 = "0.22"
+base64 = "0.23"
 chrono = { version = "0.4", default-features = false, features = ["clock", "serde"] }
 fs2 = "0.4"
 openidconnect = { version = "4.1.0", default-features = false, features = ["reqwest", "rustls-tls", "timing-resistant-secret-traits"] }
