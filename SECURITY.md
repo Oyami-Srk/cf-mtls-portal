@@ -30,6 +30,8 @@ HTTP、OIDC、会话、受限出站请求与浏览器密钥代码分目录维护
 
 ## RustSec 公告的明确例外
 
+`url` 最低版本为 2.5.9，修复 [RUSTSEC-2026-0592](https://rustsec.org/advisories/RUSTSEC-2026-0592.html) 的嵌套 blob URL origin 栈溢出。CI 发现后更新锁定依赖，未新增审查例外。
+
 `openidconnect 4.1.0` 间接使用 `rsa 0.9.10`，命中 [RUSTSEC-2023-0071](https://rustsec.org/advisories/RUSTSEC-2023-0071.html) / CVE-2023-49092。修复版本为 rsa >= 0.10，但上游当前依赖约束仍为 0.9。
 
 该公告针对 RSA **私钥操作**的可观察时序泄漏。本程序使用该依赖验证身份中心的公开签名；不在服务器生成、导入、解密或签名 RSA 私钥。设备私钥由浏览器 WebCrypto 生成，不进入 Rust 进程。OIDC 客户端使用 client_secret_basic，不使用 RSA private_key_jwt。因此在当前代码路径中，该私钥泄漏攻击不可达。
