@@ -73,6 +73,13 @@ pub fn check_certificate(input: &str, cn: &str, spki: &str, max_days: u16) -> Re
     let (rest, cert) = X509Certificate::from_der(&der).map_err(|_| AppError::remote())?;
     let names = cert.subject().iter_attributes().collect::<Vec<_>>();
     let now = chrono::Utc::now().timestamp();
+    // KU is optional for end-entity certificates. If present it must permit
+    // signing; duplicate or malformed KU extensions must still be rejected.
+    let permits_signing = match cert.key_usage() {
+        Ok(None) => true,
+        Ok(Some(usage)) => usage.value.digital_signature(),
+        Err(_) => false,
+    };
     if !rest.is_empty()
         || names.len() != 1
         || names[0].attr_type().to_id_string() != "2.5.4.3"
@@ -87,11 +94,7 @@ pub fn check_certificate(input: &str, cn: &str, spki: &str, max_days: u16) -> Re
             .ok()
             .flatten()
             .is_some_and(|e| e.value.client_auth)
-        || !cert
-            .key_usage()
-            .ok()
-            .flatten()
-            .is_some_and(|e| e.value.digital_signature())
+        || !permits_signing
     {
         return Err(AppError::conflict(
             "certificate_mismatch",

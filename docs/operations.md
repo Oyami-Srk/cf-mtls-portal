@@ -54,6 +54,14 @@ oidc_secret_file = "/secrets/oidc-client-secret"
 
 ## 失败与恢复
 
+- Cloudflare 客户端证书可能没有 Key Usage 扩展。程序允许缺省；若存在则必须允许 digitalSignature，重复或解析失败仍拒绝。clientAuth EKU、公钥、主题、有效期和非 CA 检查保持强制。
+- 可离线检查公开证书是否符合某次申请的内容约束，不访问 Cloudflare、不写数据库或规则，也不验证证书链信任：
+
+  ```sh
+  cf-mtls-portal check-certificate certificate.pem expected-cn expected-spki-sha256 365
+  ```
+
+  预期 CN 和 SPKI SHA256 应来自原申请记录。此命令仅供只读核对，不能将用户上传的证书视为可信签发结果。
 - 签发 POST 不自动重试；不确定时按原 CN/SPKI 核对唯一结果。
 - 已签发但未确认规则时“重试开通”，不重新申请证书，并重新检查远端状态。
 - 撤销先保存待撤销状态，再从规则排除指纹，最后撤销远端证书。失败时保留状态并允许重试。

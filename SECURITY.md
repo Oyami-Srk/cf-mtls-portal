@@ -17,7 +17,7 @@
 | CSRF 与会话 | 所有写 API 要求精确 Origin、随机 CSRF Token、same-origin Fetch Metadata；Host 固定；Secure/HttpOnly/SameSite=Lax 的 host-only Cookie；重复 Cookie 拒绝；会话 30 分钟绝对、10 分钟闲置有效期，RAM 有上限。 |
 | 横向越权 | CSR 申请、证书查询、续签、恢复、撤销均以会话 sub 查库；转发身份头或 Authorization 头不能代替会话。 |
 | 恶意 CSR | 输入上限、单一 CN、固定申请主题、公钥 RSA 2048/e65537、SHA256 签名验证、版本和空 attributes 检查；拒绝私钥 PEM、附加 PEM、尾随 DER。 |
-| 签发结果替换 | 远端返回证书必须是当前 CSR 的 SPKI 和主题；有效期合理、非 CA、clientAuth EKU、digitalSignature KU；不匹配则不更新访问规则。 |
+| 签发结果替换 | 远端返回证书必须是当前 CSR 的 SPKI 和主题；有效期合理、非 CA、clientAuth EKU。KU 可缺省；若存在则须允许 digitalSignature，重复或解析失败仍拒绝。不匹配则不更新访问规则。 |
 | 规则漂移与并发 | 单进程写锁、数据目录文件锁、预读/重读、规则快照、其他规则哈希、写后核对。表达式归一化保留引号内空白，避免把不同字符串视为相同。 |
 | 超时、崩溃及重复签发 | 签发 POST 禁止自动重试；先保存申请公钥哈希。规则写入前记录持久化意图；若仍观察到旧表达式，不能判定远端请求结束，因此保留阻断状态，不盲目重放。 |
 | 撤销竞态 | 先持久化 revocation_pending，使其他更新不再加入该证书；确认从规则排除后才标记 blocked，再撤销 Cloudflare 证书。网络失败和进程重启保留待处理状态。 |

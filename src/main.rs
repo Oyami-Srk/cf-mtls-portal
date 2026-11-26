@@ -45,6 +45,21 @@ async fn run() -> Result<()> {
             println!("CSR valid; SPKI SHA256 {spki}");
             return Ok(());
         }
+        Some("check-certificate") if args.len() == 5 => {
+            let days = args[4]
+                .parse::<u16>()
+                .map_err(|_| AppError::bad("validity_days", "有效期天数无效。"))?;
+            if !(1..=365).contains(&days) {
+                return Err(AppError::bad("validity_days", "有效期天数必须为 1–365。"));
+            }
+            let text = std::fs::read_to_string(&args[1])?;
+            let checked = crypto::check_certificate(&text, &args[2], &args[3], days)?;
+            println!(
+                "Certificate matches request; SHA256 {}; expires {}",
+                checked.fingerprint, checked.expires_at
+            );
+            return Ok(());
+        }
         Some("import-legacy") if args.len() == 3 => {
             store::Store::import(Path::new(&args[1]), Path::new(&args[2]))?;
             println!("Imported offline database copy; original untouched");
@@ -59,7 +74,7 @@ async fn run() -> Result<()> {
         Some("serve") if args.len() == 2 => (),
         _ => {
             println!(
-                "cf-mtls-portal serve <config.toml>\ncf-mtls-portal check-config <config.toml>\ncf-mtls-portal check-csr <csr.pem> <expected-cn>\ncf-mtls-portal import-legacy <offline-source.sqlite3> <new-target.sqlite3>"
+                "cf-mtls-portal serve <config.toml>\ncf-mtls-portal check-config <config.toml>\ncf-mtls-portal check-csr <csr.pem> <expected-cn>\ncf-mtls-portal check-certificate <certificate.pem> <expected-cn> <expected-spki-sha256> <max-days>\ncf-mtls-portal import-legacy <offline-source.sqlite3> <new-target.sqlite3>"
             );
             return Ok(());
         }
