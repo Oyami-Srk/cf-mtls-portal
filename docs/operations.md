@@ -54,6 +54,8 @@ oidc_secret_file = "/secrets/oidc-client-secret"
 
 ## 失败与恢复
 
+- 设备类型决定 `.p12` 导出封装：macOS/iPhone/iPad 使用钥匙串兼容的 PKCS#12 3DES/SHA1；Windows/Android 使用 PBES2/PBKDF2/AES-256。两者均保留 100000 迭代、16 字节盐和 HMAC-SHA1，不上传私钥或密码。首次打包与打包失败后的重试使用相同选择规则；封装格式不改变证书本身。
+- `Unable to decode the provided data` 可能是钥匙串不支持 PBES2 封装，并不必然表示密码错误或证书损坏。确认设备类型选择正确，优先使用页面随机生成的导入密码；在私钥仍保留于原页面时可重新打包，无需重复签发。关闭页面后无法凭服务器公开证书恢复私钥。
 - Cloudflare 客户端证书可能没有 Key Usage 扩展。程序允许缺省；若存在则必须允许 digitalSignature，重复或解析失败仍拒绝。clientAuth EKU、公钥、主题、有效期和非 CA 检查保持强制。
 - 可离线检查公开证书是否符合某次申请的内容约束，不访问 Cloudflare、不写数据库或规则，也不验证证书链信任：
 

@@ -87,11 +87,14 @@ export class BrowserCertificate {
     return Boolean(this.#packageUrl);
   }
 
-  package(password) {
+  package(password, profile = "modern") {
+    // Apple's legacy Keychain importer needs PKCS#12 PBE instead of PBES2.
+    if (profile !== "modern" && profile !== "apple") throw new Error("不支持的证书文件格式。");
+    const algorithm = profile === "apple" ? "3des" : "aes256";
     const forge = forgeApi();
     const cert = forge.pki.certificateFromPem(this.#certificate);
     const p12 = forge.pkcs12.toPkcs12Asn1(this.#privateKey, [cert], password, {
-      algorithm: "aes256",
+      algorithm,
       count: 100000,
       saltSize: 16,
       useMac: true,

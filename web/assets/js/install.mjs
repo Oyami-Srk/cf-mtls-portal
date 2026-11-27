@@ -5,7 +5,7 @@ const instructions = {
     "使用支持客户端证书的浏览器访问 mTLS 入口，按提示选择证书。部分应用内浏览器不支持。",
   ],
   ios: [
-    "使用 Safari 下载 .p12 文件，保存到“文件”。",
+    "设备类型选择“iPhone / iPad”，使用 Safari 下载 .p12 文件，保存到“文件”。",
     "打开该文件，按系统提示前往“设置”，安装下载的客户端身份并输入导入密码。无需安装根 CA。",
     "使用 Safari 访问 mTLS 入口，选择对应的设备证书。",
   ],
@@ -15,7 +15,7 @@ const instructions = {
     "使用 Edge 或 Chrome 访问 mTLS 入口，选择对应的设备证书。",
   ],
   mac: [
-    "下载 .p12 文件并用“钥匙串访问”打开。",
+    "设备类型选择“macOS”，下载 .p12 文件并用“钥匙串访问”打开。",
     "将身份导入“登录”钥匙串，输入导入密码。无需设置为受信任的根 CA。",
     "使用 Safari 等支持系统客户端身份的浏览器访问 mTLS 入口。",
   ],
@@ -26,7 +26,7 @@ export function currentDeviceType() {
   if (/Android/i.test(agent)) return "android";
   if (/iPhone|iPad/i.test(agent)) return "ios";
   if (/Win/i.test(agent)) return "windows";
-  return "mac";
+  return /Macintosh|Mac OS X/i.test(agent) ? "mac" : "windows";
 }
 
 export function renderInstallGuide(type) {

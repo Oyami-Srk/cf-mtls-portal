@@ -113,7 +113,8 @@ async function recoverDevice(device) {
 }
 
 function packageCertificate(password) {
-  certificateRequest.package(password);
+  const type = element("device-type").value;
+  certificateRequest.package(password, type === "mac" || type === "ios" ? "apple" : "modern");
   element("retry-package").hidden = true;
   element("download-p12").disabled = false;
 }
